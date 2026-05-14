@@ -1,0 +1,12 @@
+3 places to update when IP changes:
+
+EC2 #2 (SonarQube) IP changes:
+
+Jenkins → Manage Jenkins → System → SonarQube servers → update URL
+EC2 #3 (Docker) IP changes:
+
+Jenkins → your job my-website → Configure → Pipeline script → update IP in the ssh and scp commands
+EC2 #1 (Jenkins) IP changes:
+
+Nothing to update inside Jenkins
+Just use the new public IP to access http://<new-ip>:8080

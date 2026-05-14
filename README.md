@@ -15,16 +15,6 @@ Every time code is pushed to GitHub, Jenkins automatically:
 
 ---
 
-## Architecture
-
-```
-EC2 #1 — Jenkins Server     (port 8080)
-EC2 #2 — SonarQube Server   (port 9000)
-EC2 #3 — Docker App Server  (port 80)
-```
-
----
-
 ## Tech Stack
 
 | Tool | Purpose |
@@ -37,21 +27,17 @@ EC2 #3 — Docker App Server  (port 80)
 
 ---
 
-## How it Works
+# Part 1 — Installation
+
+## Architecture
 
 ```
-Push code to GitHub
-        ↓
-Jenkins (EC2 #1) pulls the code
-        ↓
-SonarQube (EC2 #2) scans for bugs and code issues
-        ↓
-Jenkins SSHs into EC2 #3
-        ↓
-Docker builds the nginx image
-        ↓
-Container runs → site is live on port 80
+EC2 #1 — Jenkins Server     (port 8080)
+EC2 #2 — SonarQube Server   (port 9000)
+EC2 #3 — Docker App Server  (port 80)
 ```
+
+![EC2 - 3 Machines](Images/ec2-%203%20machines.png)
 
 ---
 
@@ -63,9 +49,7 @@ Container runs → site is live on port 80
 
 ---
 
-## Installation
-
-### EC2 #1 — Jenkins
+## EC2 #1 — Jenkins
 
 ```bash
 sudo apt update
@@ -86,9 +70,11 @@ Get initial admin password:
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
 
+![Jenkins Dashboard](Images/Jenkins%20dashboard.png)
+
 ---
 
-### EC2 #2 — SonarQube
+## EC2 #2 — SonarQube
 
 ```bash
 sudo apt update
@@ -108,9 +94,12 @@ sudo chown -R ubuntu:ubuntu /opt/sonarqube
 Access at: `http://<EC2-2-IP>:9000`
 Default login: `admin / admin`
 
+![SonarQube Server URL](Images/sonarqube%20server-%20url.png)
+![SonarQube Dashboard](Images/sonarqube%20-%20dashboard.png)
+
 ---
 
-### EC2 #3 — Docker
+## EC2 #3 — Docker
 
 ```bash
 sudo apt update
@@ -150,6 +139,52 @@ chmod 600 ~/.ssh/authorized_keys
 ```
 
 Add private key in Jenkins → Credentials → SSH Username with private key → ID: `docker-server`
+
+![Jenkins Credentials](Images/jenkins-%20creditt.png)
+
+---
+
+## Security Groups
+
+| EC2 | Port | Source |
+|---|---|---|
+| Jenkins | 22, 8080 | Your IP |
+| SonarQube | 22, 9000 | Your IP + Jenkins IP |
+| Docker | 22 | Your IP + Jenkins IP |
+| Docker | 80 | 0.0.0.0/0 |
+
+![SG - Inbound Rules](Images/SG%20-%20inbound.png)
+![SG - Outbound Rules](Images/SG%20-%20outbound.png)
+
+---
+
+## Storage Requirements
+
+| EC2 | Minimum |
+|---|---|
+| Jenkins | 20 GB |
+| SonarQube | 30 GB |
+| Docker | 15 GB |
+
+---
+
+# Part 2 — Working
+
+## How it Works
+
+```
+Push code to GitHub
+        ↓
+Jenkins (EC2 #1) pulls the code
+        ↓
+SonarQube (EC2 #2) scans for bugs and code issues
+        ↓
+Jenkins SSHs into EC2 #3
+        ↓
+Docker builds the nginx image
+        ↓
+Container runs → site is live on port 80
+```
 
 ---
 
@@ -196,21 +231,9 @@ pipeline {
 
 ---
 
-## Security Groups
+## Pipeline Results
 
-| EC2 | Port | Source |
-|---|---|---|
-| Jenkins | 22, 8080 | Your IP |
-| SonarQube | 22, 9000 | Your IP + Jenkins IP |
-| Docker | 22 | Your IP + Jenkins IP |
-| Docker | 80 | 0.0.0.0/0 |
-
----
-
-## Storage Requirements
-
-| EC2 | Minimum |
-|---|---|
-| Jenkins | 20 GB |
-| SonarQube | 30 GB |
-| Docker | 15 GB |
+![Jenkins - My Website Job](Images/jenkins-my%20website.png)
+![Jenkins - My Website Status](Images/jenkins-%20my%20website%20-%20status.png)
+![Docker Status](Images/docker%20status.png)
+![Docker Website](Images/docker%20webiste.png)
